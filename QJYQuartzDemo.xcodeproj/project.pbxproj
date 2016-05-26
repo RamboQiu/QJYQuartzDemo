@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		41DDDF301CE07E04004B38B0 /* comment_head.png in Resources */ = {isa = PBXBuildFile; fileRef = 41DDDF2F1CE07E04004B38B0 /* comment_head.png */; };
+		41DE26211CE9B92000AE970E /* about-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 41DE26201CE9B92000AE970E /* about-logo.png */; };
 		41E90A4A1CDC92D800435D14 /* TableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E90A491CDC92D800435D14 /* TableViewController.m */; };
 		41E967EE1CDB797300FEDE7B /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E967ED1CDB797300FEDE7B /* main.m */; };
 		41E967F11CDB797300FEDE7B /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E967F01CDB797300FEDE7B /* AppDelegate.m */; };
@@ -19,6 +20,7 @@
 
 /* Begin PBXFileReference section */
 		41DDDF2F1CE07E04004B38B0 /* comment_head.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = comment_head.png; sourceTree = "<group>"; };
+		41DE26201CE9B92000AE970E /* about-logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "about-logo.png"; sourceTree = "<group>"; };
 		41E90A481CDC92D800435D14 /* TableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TableViewController.h; sourceTree = "<group>"; };
 		41E90A491CDC92D800435D14 /* TableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TableViewController.m; sourceTree = "<group>"; };
 		41E967E91CDB797300FEDE7B /* QJYQuartzDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = QJYQuartzDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -68,6 +70,7 @@
 				41E967F21CDB797300FEDE7B /* ViewController.h */,
 				41E967F31CDB797300FEDE7B /* ViewController.m */,
 				41DDDF2F1CE07E04004B38B0 /* comment_head.png */,
+				41DE26201CE9B92000AE970E /* about-logo.png */,
 				41E90A481CDC92D800435D14 /* TableViewController.h */,
 				41E90A491CDC92D800435D14 /* TableViewController.m */,
 				41E967F51CDB797300FEDE7B /* Main.storyboard */,
@@ -144,6 +147,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				41DE26211CE9B92000AE970E /* about-logo.png in Resources */,
 				41E967FC1CDB797300FEDE7B /* LaunchScreen.storyboard in Resources */,
 				41E967F91CDB797300FEDE7B /* Assets.xcassets in Resources */,
 				41DDDF301CE07E04004B38B0 /* comment_head.png in Resources */,

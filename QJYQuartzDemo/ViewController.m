@@ -91,6 +91,11 @@
       解释缩放的工作方式，但实验表明12是最佳的模糊度，99及以上的模糊度会让阴影变得不成形。
  * 12.CGContextFillRect(con, CGRectMake(100,0,1.0/self.contentScaleFactor,100));
       像素为1px的垂线
+ * 13.填充一个路径的时候，路径里面的子路径都是独立填充的。
+      假如是重叠的路径，决定一个点是否被填充，有两种规则
+      1.nonzero winding number rule:非零绕数规则，假如一个点被从左到右跨过，计数器+1，从右到左跨过，计数器-1，最后，如果结果是0，那么不填充，如果是非零，那么填充。
+      2.even-odd rule: 奇偶规则，假如一个点被跨过，那么+1，最后是奇数，那么要被填充，偶数则不填充，和方向没有关系。
+      http://blog.csdn.net/freshforiphone/article/details/8273023
 **/
 
 #import "ViewController.h"
@@ -120,7 +125,8 @@
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     CGContextAddEllipseInRect(ctx, CGRectMake(0, 0, 100, 100));
-    CGContextSetFillColorWithColor(ctx, [UIColor blueColor].CGColor);
+//    CGContextSetFillColorWithColor(ctx, [UIColor blueColor].CGColor);
+    CGContextSetFillColor(ctx, CGColorGetComponents([[UIColor greenColor] CGColor]));
     CGContextFillPath(ctx);
 }
 
@@ -418,9 +424,7 @@ CGImageRef flip(CGImageRef im) {
 //*****************************************12*********************************//
 @interface MyView12 : UIView
 @end
-
 @implementation MyView12
-///
 - (instancetype)init {
     if (self = [super init]) {
         UIGraphicsBeginImageContextWithOptions(CGSizeMake(40, 40), NO, 0);
@@ -451,9 +455,7 @@ CGImageRef flip(CGImageRef im) {
 //*****************************************13*********************************//
 @interface MyView13 : UIView
 @end
-
 @implementation MyView13
-
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     // 绘制一个黑色的垂直线，作为箭头的杆子
@@ -479,9 +481,7 @@ CGImageRef flip(CGImageRef im) {
 //*****************************************14*********************************//
 @interface MyView14 : UIView
 @end
-
 @implementation MyView14
-
 - (void)drawRect:(CGRect)rect {
     UIBezierPath *p = [UIBezierPath bezierPath];
     [p moveToPoint:CGPointMake(100, 100)];
@@ -504,9 +504,7 @@ CGImageRef flip(CGImageRef im) {
 //*****************************************15*********************************//
 @interface MyView15 : UIView
 @end
-
 @implementation MyView15
-
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     CGContextSetStrokeColorWithColor(ctx, [UIColor blueColor].CGColor);
@@ -519,9 +517,7 @@ CGImageRef flip(CGImageRef im) {
 //*****************************************16*********************************//
 @interface MyView16 : UIView
 @end
-
 @implementation MyView16
-
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     // 从上下文裁剪区域中挖一个三角形状的孔
@@ -549,9 +545,7 @@ CGImageRef flip(CGImageRef im) {
 //*****************************************17*********************************//
 @interface MyView17 : UIView
 @end
-
 @implementation MyView17
-
 - (void)drawRect:(CGRect)rect {
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     CGContextSaveGState(ctx); {
@@ -581,6 +575,7 @@ CGImageRef flip(CGImageRef im) {
         CGColorSpaceRef sp = CGColorSpaceCreateDeviceGray();
         CGGradientRef grad = CGGradientCreateWithColorComponents(sp, colors, locs, 3);
         CGContextDrawLinearGradient(ctx, grad, CGPointMake(89, 0), CGPointMake(111, 0), 0);
+        CGContextDrawRadialGradient(ctx, grad, CGPointMake(50, 300), 20, CGPointMake(100, 300), 20, 0);
         CGColorSpaceRelease(sp);
         CGGradientRelease(grad);
     } CGContextRestoreGState(ctx);//完成裁剪
@@ -593,10 +588,12 @@ CGImageRef flip(CGImageRef im) {
         CGPatternCallbacks callback = {0, &drawStripes, NULL};
         CGAffineTransform tr = CGAffineTransformIdentity;
         CGFloat buf = 10;
-        CGPatternRef patt = CGPatternCreate(&buf, CGRectMake(0, 0, 4, 4), tr, 4, 4, kCGPatternTilingConstantSpacingMinimalDistortion, true, &callback);
+        CGPatternRef patt = CGPatternCreate(&buf, CGRectMake(0, 0, 4, 4), tr, 4, 4, kCGPatternTilingConstantSpacingMinimalDistortion, false, &callback);
         CGFloat alph = 1.0;
         CGContextSetPatternPhase(ctx, CGSizeMake(40, 25));//CGContextSetPatternPhase函数改变模板的定位,不用这个最底部的似乎只平铺了一半蓝色。这是因为一个模板的定位并不关心你填充（描边）的形状，总的来说它只关心图形上下文。
         CGContextSetFillPattern(ctx, patt, &alph);
+        
+//        CGContextSetStrokePattern(ctx, patt, &alph);
         CGPatternRelease(patt);
         /**
         CGPatternCreate。一个模板是在一个矩形元中的绘图。我们需要矩形元的尺寸（第二个参数）以及矩形元原始点之间的间隙（第四和第五个参数）。这这种情况下，矩形元是4*4的，每一个矩形元与它的周围矩形元是紧密贴合的。我们需要提供一个应用到矩形元的变换参数（第三个参数）；在这种情况下，我们不需要变换做什么工作，所以我们应用了一个恒等变换。我们应用了一个瓷砖规则（第六个参数）。我们需要声明的是颜色模板不是漏印（stencil）模板，所以参数值为true。并且我们需要提供一个指向回调函数的指针，回调函数的工作是向矩形元绘制模板。第八个参数是一个指向CGPatternCallbacks结构体的指针。这个结构体由数字0和两个指向函数的指针构成。第一个函数指针指向的函数当模板被绘制到矩形元中被调用，第二个函数指针指向的函数当模板被释放后调用。第二个函数指针我们没有指定，它的存在主要是为了内存管理的需要。但在这个简单的例子中，我们并不需要。
@@ -615,15 +612,18 @@ void drawStripes(void *info, CGContextRef con) {
     CGContextFillRect(con, CGRectMake(0, 0, 4, 4));//这里的绘制滑板4*4单元就是CGPatternCreate第二个参数，每个单元的原始点距离就是第四第五个参数
     CGContextSetFillColorWithColor(con, [[UIColor blueColor] CGColor]);
     CGContextFillRect(con, CGRectMake(0, 0, 4, 2));
+    
+//    CGContextSetStrokeColorWithColor(con, [[UIColor redColor] CGColor]);
+//    CGContextStrokeRect(con, CGRectMake(0, 0, 4, 4));
+//    CGContextSetStrokeColorWithColor(con, [[UIColor blueColor] CGColor]);
+//    CGContextStrokeRect(con, CGRectMake(0, 0, 4, 2));
 }
 
 @end
 //*****************************************18*********************************//
 @interface MyView18 : UIView
 @end
-
 @implementation MyView18
-
 - (void)drawRect:(CGRect)rect {
     UIGraphicsBeginImageContextWithOptions(CGSizeMake(40, 100), NO, 0.0);
         CGContextRef con = UIGraphicsGetCurrentContext();
@@ -683,7 +683,6 @@ void drawStripes(void *info, CGContextRef con) {
 //*****************************************19*********************************//
 @interface MyView19 : UIView
 @end
-
 @implementation MyView19
 
 - (void)drawRect:(CGRect)rect {
@@ -757,6 +756,567 @@ void drawStripes(void *info, CGContextRef con) {
     }
 }
 @end
+//*****************************************20*********************************//
+@interface MyView20 : UIView
+@end
+@implementation MyView20
+- (void)drawRect:(CGRect)rect {
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextMoveToPoint(ctx, 20, 10);
+    CGContextAddLineToPoint(ctx, 20, 100);
+    CGContextAddLineToPoint(ctx, 100, 100);
+    CGContextAddLineToPoint(ctx, 20, 20);
+    CGContextAddLineToPoint(ctx, 100, 20);
+    CGContextAddLineToPoint(ctx, 40, 70);
+    CGContextAddLineToPoint(ctx, 40, 120);
+    CGContextSetLineWidth(ctx, 5);
+    CGContextSetLineCap(ctx, kCGLineCapRound);
+    CGContextSetLineJoin(ctx, kCGLineJoinRound);
+    CGFloat length[2] = {5, 5};
+    CGContextSetLineDash(ctx, 0, length, 2);
+    CGContextStrokePath(ctx);
+    
+    CGContextMoveToPoint(ctx, 20 + 120, 10);
+    CGContextAddLineToPoint(ctx, 20 + 120, 100);
+    CGContextAddLineToPoint(ctx, 100 + 120, 100);
+    CGContextAddLineToPoint(ctx, 20 + 120, 20);
+    CGContextAddLineToPoint(ctx, 100 + 120, 20);
+    CGContextAddLineToPoint(ctx, 40 + 120, 70);
+    CGContextAddLineToPoint(ctx, 40 + 120, 120);
+    CGContextSetLineWidth(ctx, 5);
+    CGContextSetLineCap(ctx, kCGLineCapSquare);
+    CGContextSetLineJoin(ctx, kCGLineJoinMiter);
+    CGContextSetMiterLimit(ctx, 2.9);
+    CGContextSetLineDash(ctx, 0, NULL, 0);
+    CGContextStrokePath(ctx);
+}
+@end
+//*****************************************21*********************************//
+@interface MyView21 : UIView
+@end
+@implementation MyView21
+- (void)drawRect:(CGRect)rect {
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextSetRGBStrokeColor(ctx,1,0,0,1);//设置红色画笔
+    CGContextMoveToPoint(ctx,110,0);
+    CGContextAddLineToPoint(ctx,50,50);
+    CGContextAddLineToPoint(ctx,80,10); //你可以去掉这一行和下面一行看看，就知道为什么我说的传入addArcToPoint方法里的参数本身不一定要绘制的原因了
+    CGContextAddLineToPoint(ctx,50,50);
+    CGContextAddArcToPoint(ctx,80,10,80,110,50);
+    CGContextAddLineToPoint(ctx,80,110); //测试显示调用addArcToPoint结束后current point不在(80,110)上，而是在弧线结束的地方
+    CGContextStrokePath(ctx);
+}
+@end
+//*****************************************22*********************************//
+@interface MyView22 : UIView
+@end
+@implementation MyView22
+- (void)drawRect:(CGRect)rect {
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextSetRGBStrokeColor(ctx,1,0,0,1);//设置红色画笔
+    CGContextMoveToPoint(ctx, 10, 10);
+    CGContextAddCurveToPoint(ctx, 20, 20, 300, 40, 30, 20);
+    CGContextStrokePath(ctx);
+}
+@end
+//*****************************************23*********************************//
+@interface MyView23 : UIView
+@end
+@implementation MyView23
+- (void)drawRect:(CGRect)rect {
+    [self drawingGradient];
+}
+
+- (void)drawTwoLines {
+    CGRect screenRect = [[UIScreen mainScreen] bounds];
+    
+    CGMutablePathRef path = CGPathCreateMutable();
+    CGPathMoveToPoint(path, NULL, screenRect.origin.x, screenRect.origin.y);
+    CGPathAddLineToPoint(path, NULL, screenRect.size.width, screenRect.size.height);
+    CGPathMoveToPoint(path, NULL, screenRect.size.width, screenRect.origin.y);
+    CGPathAddLineToPoint(path, NULL, screenRect.origin.x, screenRect.size.height);
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextAddPath(context, path);
+    CGContextSetLineWidth(context, 1.0f);
+    [[UIColor blueColor] setStroke];
+    CGContextDrawPath(context, kCGPathStroke);      //第二个参数为画路径的样式，这里为描线，也可以有填充或者既描线也填充
+    
+    CGPathRelease(path);
+}
+
+- (void)drawTwoRects {
+    CGMutablePathRef path = CGPathCreateMutable();
+    
+    CGRect rect1 = CGRectMake(20, 20, 200, 100);
+    CGRect rect2 = CGRectMake(20, 200, 200, 80);
+    CGRect rects[] = {rect1, rect2};
+    
+    CGPathAddRects(path, NULL, rects, 2);
+    
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextAddPath(ctx, path);
+    CGContextSetLineWidth(ctx, 2.0f);
+    [[UIColor yellowColor] setFill];
+    [[UIColor blackColor] setStroke];
+    
+    CGContextDrawPath(ctx, kCGPathFillStroke);
+    CGPathRelease(path);
+}
+
+- (void)drawTwoRectsWithShadow {
+    CGMutablePathRef path = CGPathCreateMutable();
+    
+    CGRect rect1 = CGRectMake(55, 60, 150, 150);
+    CGPathAddRect(path, NULL, rect1);
+    
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextAddPath(ctx, path);
+    CGContextSetShadowWithColor(ctx, CGSizeMake(10, 10), 20.0f, [[UIColor grayColor] CGColor]);
+    [[UIColor purpleColor] setFill];
+    CGContextDrawPath(ctx, kCGPathFill);
+    CGPathRelease(path);
+    
+    CGMutablePathRef path2 = CGPathCreateMutable();
+    
+    CGRect rect2 = CGRectMake(130, 290, 100, 100);
+    CGPathAddRect(path2, NULL, rect2);
+    CGContextAddPath(ctx, path2);
+    [[UIColor yellowColor] setFill];
+    CGContextDrawPath(ctx, kCGPathFill);
+    
+    CGPathRelease(path2);
+}
+
+- (void)drawingGradient {
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    CGGradientRef gradient = CGGradientCreateWithColorComponents(colorSpace,
+                                                                 (CGFloat[]){
+                                                                     0.8, 0.2, 0.2, 1.0,
+                                                                     0.2, 0.8, 0.2, 1.0,
+                                                                     0.2, 0.2, 0.8, 1.0
+                                                                 }, (CGFloat[]) {
+                                                                     0.0, 0.5, 1.0
+                                                                 }, 3);
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextSaveGState(ctx);
+    CGContextDrawLinearGradient(ctx, gradient, CGPointMake(100, 200), CGPointMake(220, 280), kCGGradientDrawsBeforeStartLocation|kCGGradientDrawsAfterEndLocation);
+    CGContextRestoreGState(ctx);
+    CGGradientRelease(gradient);
+    CGColorSpaceRelease(colorSpace);
+}
+@end
+//*****************************************24*********************************//
+@interface MyView24 : UIView
+@end
+@implementation MyView24
+- (void)drawRect:(CGRect)rect {
+    UIImage *logo = [UIImage imageNamed:@"about-logo"];
+    CGRect bounds = CGRectMake(0, 0, logo.size.width, logo.size.height);
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGMutablePathRef path = CGPathCreateMutable();
+    
+    CGPathAddEllipseInRect(path, NULL, bounds);
+    CGPathAddEllipseInRect(path, NULL, CGRectMake(10, 10, logo.size.width - 20, logo.size.height - 20));
+    CGPathAddEllipseInRect(path, NULL, CGRectMake(20, 20, logo.size.width - 40, logo.size.height - 40));
+    CGContextAddPath(context, path);
+    
+    CGContextEOClip(context);
+    [logo drawInRect:bounds];
+    CFRelease(path);
+}
+@end
+//*****************************************25*********************************//
+@interface MyView25 : UIView
+@end
+@implementation MyView25
+- (void)drawRect:(CGRect)rect {
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextAddRect(ctx, CGRectMake(10, 10, 40, 70));
+    CGContextAddRect(ctx, CGRectMake(20, 20, 50, 10));
+    CGContextAddRect(ctx, CGRectMake(25, 25, 50, 5));
+    CGContextEOFillPath(ctx);
+    
+    
+    CGContextMoveToPoint(ctx, 50, 110);
+    CGContextAddLineToPoint(ctx, 60, 130);
+    CGContextAddLineToPoint(ctx, 70, 110);
+    CGContextAddLineToPoint(ctx, 90, 160);
+    CGContextAddLineToPoint(ctx, 0, 120);
+    CGContextAddLineToPoint(ctx, 120, 120);
+    CGContextAddLineToPoint(ctx, 30, 160);
+    CGContextAddLineToPoint(ctx, 90, 160);
+    CGContextClosePath(ctx);
+    CGContextEOFillPath(ctx);
+}
+
+
+@end
+//*****************************************26*********************************//
+@interface MyView26 : UIView
+@end
+@implementation MyView26
+- (void)drawRect:(CGRect)rect {
+    CGRect bound = CGRectMake(0, 0, 300, 124);
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    CGContextSaveGState(context);
+        CGContextTranslateCTM(context, 0, 124);
+        CGContextScaleCTM(context, 1.0, -1.0);
+        [[UIColor blueColor] setFill];
+        [@"我是你的好朋友" drawInRect:rect withFont:[UIFont fontWithName:@"HelveticaNeue-Bold" size:124]];
+    CGContextRestoreGState(context);
+    
+    CGImageRef alphaMask = CGBitmapContextCreateImage(context);
+    CGContextClipToMask(context, CGRectMake(0, 0, 100, 60), alphaMask);
+    [[UIColor redColor] setFill];
+    CGContextFillRect(context, bound);
+    
+    
+//    [[UIImage imageNamed:@"about-logo"] drawInRect:rect];
+    CGImageRelease(alphaMask);
+}
+
+@end
+//*****************************************27*********************************//
+@interface MyView27 : UIView
+
+@end
+@implementation MyView27
+- (void)drawRect:(CGRect)rect {
+    float wd = 300;
+    float ht = 300;
+    
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGSize myShadowOffset = CGSizeMake(10, -20);
+    CGContextSetShadow(ctx,  myShadowOffset, 10);
+    CGContextBeginTransparencyLayer(ctx, NULL);
+    CGContextSetRGBFillColor(ctx, 0, 1, 0, 1);
+    CGContextFillRect(ctx, CGRectMake(wd / 3 + 50, ht / 2, wd / 4, ht / 4));
+    CGContextSetRGBFillColor(ctx, 0, 0, 1, 1);
+    CGContextFillRect(ctx, CGRectMake(wd / 3 - 50, ht / 2 - 100, wd / 4, ht / 4));
+    CGContextSetRGBFillColor(ctx, 1, 0, 0, 1);
+    CGContextFillRect(ctx, CGRectMake(wd / 3, ht / 2 - 50, wd / 4, ht / 4));
+    CGContextEndTransparencyLayer(ctx);
+    
+    ht = 700;
+    CGContextSetRGBFillColor(ctx, 0, 1, 0, 1);
+    CGContextFillRect(ctx, CGRectMake(wd / 3 + 50, ht / 2, wd / 4, ht / 4));
+    CGContextSetRGBFillColor(ctx, 0, 0, 1, 1);
+    CGContextFillRect(ctx, CGRectMake(wd / 3 - 50, ht / 2 - 100, wd / 4, ht / 4));
+    CGContextSetRGBFillColor(ctx, 1, 0, 0, 1);
+    CGContextFillRect(ctx, CGRectMake(wd / 3, ht / 2 - 50, wd / 4, ht / 4));
+}
+@end
+//*****************************************28*********************************//
+@interface MyView28 : UIView
+
+@end
+@implementation MyView28
+- (void)drawRect:(CGRect)rect {
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    UIImage *currentImage = [UIImage imageNamed:@"comment_head"];
+    CGImageRef image = CGImageRetain(currentImage.CGImage);
+    CGRect imageRect = CGRectMake(0, 0, 10, 10);
+    CGContextClipToRect(ctx, CGRectMake(0, 0, rect.size.width, rect.size.height));
+    CGContextDrawTiledImage(ctx, imageRect, flip(image));
+    
+}
+@end
+//*****************************************29*********************************//
+@interface MyView29 : UIView
+@end
+@implementation MyView29
+- (void)drawRect:(CGRect)rect {
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+//    //绘制渐变
+//    CGFloat locs[3] = {0.0, 0.5, 1.0};
+//    CGFloat colors[12] = {
+//        0.3, 0.3, 0.3, 0.8,// 开始颜色，透明灰
+//        0.0, 0.0, 0.0, 1.0,// 中间颜色，黑色
+//        0.3, 0.3, 0.3, 0.8 // 末尾颜色，透明灰
+//    };
+//    CGColorSpaceRef sp = CGColorSpaceCreateDeviceGray();
+//    CGGradientRef grad = CGGradientCreateWithColorComponents(sp, colors, locs, 3);
+//    
+//    
+//    CGGradientRef myGradient;
+//    CGColorSpaceRef myColorspace;
+//    size_t num_locations = 2;
+//    CGFloat locations[2] = { 0.0, 1.0 };
+//    CGFloat components[8] = { 1.0, 0.5, 0.4, 1.0,  // Start color
+//                              0.8, 0.8, 0.3, 1.0 }; // End color
+//
+//    myColorspace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+//    myGradient = CGGradientCreateWithColorComponents (myColorspace, components,
+//                          locations, num_locations);
+//
+//    CGContextDrawLinearGradient(ctx, grad, CGPointMake(89, 0), CGPointMake(111, 0), 0);
+//    CGContextDrawRadialGradient(ctx, myGradient, CGPointMake(100, 600), 20, CGPointMake(200, 300), 100, 0);
+//    CGColorSpaceRelease(sp);
+//    CGGradientRelease(grad);
+    
+    myPaintRadialShading(ctx, CGRectMake(50, 50, 250, 300));//myCalculateShadingValues1
+//    myPaintAxialShading(ctx, CGRectMake(50, 250, 250, 300));//myCalculateShadingValues
+}
+
+static void myCalculateShadingValues(void *info, const CGFloat *in, CGFloat *out) {
+    CGFloat v;
+    size_t k, components;
+    static const CGFloat c[] = {1, 0, .5, 0};
+    components = (size_t)info;
+    v = *in;
+    for (k = 0; k < components - 1; k ++) {
+        *out++ = c[k] * v;
+    }
+    *out++ = 1;
+}
+
+static void myCalculateShadingValues1(void *info, const CGFloat *in, CGFloat *out) {
+    size_t k, components;
+    double frequency[4] = {55, 220, 110, 0};
+    components = (size_t)info;
+    for (k = 0; k < components - 1; k ++) {
+        *out++ = (1 +sin(*in * frequency[k]))/2;
+    }
+    *out++ = 1;//alpha
+}
+
+static CGFunctionRef myGetFunction(CGColorSpaceRef colorspace) {
+    size_t numComponents;
+    static const CGFloat input_value_range[2] = {0, 1};
+    static const CGFloat output_value_ranges[8] = {0, 1, 0, 1, 0, 1, 0, 1};
+    static const CGFunctionCallbacks callbacks = {0, &myCalculateShadingValues1, NULL};
+    numComponents = 1 + CGColorSpaceGetNumberOfComponents(colorspace);
+    return CGFunctionCreate((void *)numComponents, 1, input_value_range, numComponents, output_value_ranges, &callbacks);
+}
+
+
+void myPaintAxialShading(CGContextRef myContext, CGRect bounds) {
+    CGPoint startPoint = CGPointMake(0, 0.5), endPoint = CGPointMake(1, .5);
+    CGFloat width = bounds.size.width, height = bounds.size.height;
+    CGAffineTransform myTransform = CGAffineTransformMakeScale(width, height);
+    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+    CGFunctionRef myShadingFunction = myGetFunction(colorspace);
+    
+    CGShadingRef shading = CGShadingCreateAxial(colorspace, startPoint, endPoint, myShadingFunction, false, false);
+    CGContextConcatCTM(myContext, myTransform);
+    CGContextSaveGState(myContext);
+    
+    CGContextClipToRect(myContext, CGRectMake(0, 0, 1, 1));
+    CGContextSetRGBFillColor(myContext, 1, 1, 1, 1);
+    CGContextFillRect(myContext, CGRectMake(0, 0, 1, 1));
+    
+    CGContextBeginPath(myContext);
+    CGContextAddArc(myContext, .5, .5, .3, 0, M_PI, 0);
+    CGContextClosePath(myContext);
+    CGContextClip(myContext);
+    
+    CGContextDrawShading(myContext, shading);
+    CGColorSpaceRelease(colorspace);
+    CGShadingRelease(shading);
+    CGFunctionRelease(myShadingFunction);
+    
+    CGContextRestoreGState(myContext);
+    
+}
+
+void myPaintRadialShading(CGContextRef myContext, CGRect bounds) {
+    CGPoint startPoint = CGPointMake(0.25, 0.3), endPoint = CGPointMake(.7, .7);
+    CGFloat startRadius = .1, endRadius = .25;
+    CGFloat width = bounds.size.width;
+    CGFloat height = bounds.size.height;
+    CGAffineTransform mytrasnform = CGAffineTransformMakeScale(width, height);
+    
+    CGColorSpaceRef colorspace = CGColorSpaceCreateDeviceRGB();
+    CGFunctionRef myShadingFunction = myGetFunction(colorspace);
+    CGShadingRef shading = CGShadingCreateRadial(colorspace, startPoint, startRadius, endPoint, endRadius, myShadingFunction, false, false);
+    CGContextConcatCTM(myContext, mytrasnform);
+    CGContextSaveGState(myContext);
+    CGContextClipToRect(myContext, CGRectMake(0, 0, 1, 1));
+    CGContextSetRGBFillColor(myContext, 1, 1, 1, 1);
+    CGContextFillRect(myContext, CGRectMake(0, 0, 1, 1));
+    CGContextDrawShading(myContext, shading);
+    CGColorSpaceRelease(colorspace);
+    CGShadingRelease(shading);
+    CGFunctionRelease(myShadingFunction);
+    CGContextRestoreGState(myContext);
+}
+
+@end
+//*****************************************29*********************************//
+@interface MyView30 : UIView
+@end
+@implementation MyView30
+- (void)drawRect:(CGRect)rect {
+//    CGRect myBoundingBox = CGRectMake(0, 0, m, <#CGFloat height#>)
+}
+
+CGContextRef MyCreateBitmapContext(int pixelsWide, int pixelsHigh) {
+    CGContextRef context = NULL;
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB);
+    int bitmapBytesPerRow = (pixelsWide * 4);
+    int bitmapByteCount = (bitmapBytesPerRow * pixelsHigh);
+    void *bitmapData = calloc(bitmapByteCount, 0);
+    if (bitmapData == NULL) {
+        fprintf(stderr, "Memory not allocated!");
+        return NULL;
+    }
+    context = CGBitmapContextCreate(bitmapData, pixelsWide, pixelsHigh, 8, bitmapBytesPerRow, colorSpace, kCGImageAlphaPremultipliedLast);
+    if (context == NULL) {
+        free(bitmapData);
+        fprintf(stderr, "Context not created!");
+        return NULL;
+    }
+    CGColorSpaceRelease(colorSpace);
+    return context;
+}
+
+@end
+
+#define PSIZE 16 //size of the pattern cell
+@interface MyView31 : UIView
+@end
+@implementation MyView31
+- (void)drawRect:(CGRect)rect {
+    MyStencilPatternPainting(UIGraphicsGetCurrentContext(), NULL);
+}
+
+static void MyDrawStencilStar (void *info, CGContextRef myContext) {
+    int k;
+    double r, theta;
+    
+    r = 0.8 *PSIZE / 2;
+    theta = 2 * M_PI * (2.0 / 5.0); // 144 degrees
+    
+    CGContextTranslateCTM(myContext, PSIZE/2, PSIZE/2);
+    
+    CGContextMoveToPoint(myContext, 0, r);
+    for (k = 1; k < 5; k ++) {
+        CGContextAddLineToPoint(myContext, r * sin(k * theta), r * cos(k * theta));
+    }
+    CGContextClosePath(myContext);
+    CGContextFillPath(myContext);
+}
+
+void MyStencilPatternPainting(CGContextRef myContext, const Rect *windowRect) {
+    CGPatternRef pattern;
+    CGColorSpaceRef baseSpace;
+    CGColorSpaceRef patternSpace;
+    static const CGFloat color[4] = {0, 1, 0, 1};
+    static const CGPatternCallbacks callbacks = {0, &MyDrawStencilStar, NULL};
+    //创建一个通用RGB颜色空间。
+    baseSpace = CGColorSpaceCreateDeviceRGB();
+    //创建一个模式颜色空间。该颜色空间指定如何表示模式的颜色。后面要设置模式的颜色时，必须使用这个颜色空间来进行设置
+    patternSpace = CGColorSpaceCreatePattern(baseSpace);
+    //设置颜色空间来在填充模式时使用
+    CGContextSetFillColorSpace(myContext, patternSpace);
+    //释放模式颜色空间
+    CGColorSpaceRelease(patternSpace);
+    //释放基础颜色空间
+    CGColorSpaceRelease(baseSpace);
+    pattern = CGPatternCreate(NULL, CGRectMake(0, 0, PSIZE, PSIZE), CGAffineTransformIdentity, PSIZE, PSIZE, kCGPatternTilingConstantSpacing, false, &callbacks);
+    CGContextSetFillPattern(myContext, pattern, color);
+    CGPatternRelease(pattern);
+    CGContextFillRect(myContext, CGRectMake(0, 0, PSIZE*20, PSIZE*20));
+}
+@end
+
+/**
+ * 1.红色条纹和白色条纹的模式。我们可以将这个模式分解为一个单一的红色条纹，因为对于屏幕绘制来说，我们可以假设其背景颜色为白色。我们创建一个红色矩形，然后以变化的偏移量来重复绘制这个矩形，以创建美国国旗上的七条红色条纹。我们将红色矩形绘制到一个层，然后将其绘制到屏幕上七次。
+ * 2.一个蓝色矩形。我们只需要一个蓝色矩形，所以没有必要使用层。当绘制蓝色矩形时，直接将其绘制到屏幕上。
+ * 3.50个白色星星的模式。与红色条纹一下，可以使用层来绘制星星。我们创建星星边框的一个路径，然后使用白条来填充。将一个星星绘制到层，然后重复50次绘制这个层，每次绘制时适当调整偏移量。
+ * 
+ * 代码清单12-2完成了对图12-5的绘制。myDrawFlag例程在一个Cocoa程序中调用。这个程序传递一个window图形上下文和一个与图形上下文相关的视图的大小。
+**/
+@interface MyView32 : UIView
+@end
+@implementation MyView32
+- (void)drawRect:(CGRect)rect {
+    CGRect rect1 = CGRectMake(0, 0, 300, 300);
+    myDrawFlag(UIGraphicsGetCurrentContext(), &rect1);
+}
+
+void myDrawFlag (CGContextRef context, CGRect *contextRect) {
+    int i, j, num_six_star_rows = 5, num_five_star_rows = 4;
+    //第一个星星的横坐标
+    CGFloat start_x = 5.0,
+    //第一个星星的纵坐标
+            start_y = 108.0,
+    //红线之间的间距
+            red_stripe_spacing = 34.0,
+    //红旗上星星的横向间距
+            h_spacing = 26.0,
+    //红旗上星星的纵向间距
+            v_spacing = 22.0;
+    
+    CGContextRef myLayerContext1, myLayerContext2;
+    CGLayerRef stripeLayer, starLayer;
+    //指定旗的绘画区域，条纹区域，星星区域
+    CGRect myBoundingBox, stripeRect, starField;
+    //********Setting up the primitives *********//
+    //Declares an array of points that specify the lines that trace out one star.
+    CGPoint point1 = {5, 5}, point2 = {10, 15}, point3 = {10, 15}, point4 = {15, 5};
+    CGPoint point5 = {15, 5}, point6 = {2.5, 11}, point7 = {2.5, 11}, point8 = {16.5, 11};
+    CGPoint point9 = {16.5, 11}, point10 = {5, 5};
+    const CGPoint myStarPoints[] = {point1, point2, point3, point4, point5, point6, point7, point8, point9, point10};
+    stripeRect = CGRectMake(0, 0, 400, 17); // stripe
+    starField = CGRectMake(0, 102, 160, 119); // star field
+    myBoundingBox = CGRectMake(0, 0, contextRect->size.width, contextRect->size.height);
+    //***Creating layers and drawing to them ******
+    stripeLayer = CGLayerCreateWithContext(context, stripeRect.size, NULL);
+    myLayerContext1 = CGLayerGetContext(stripeLayer);
+    
+    CGContextSetRGBFillColor(myLayerContext1, 1, 0, 0, 1);
+    CGContextFillRect(myLayerContext1, stripeRect);
+    
+    starLayer = CGLayerCreateWithContext(context, starField.size, NULL);
+    myLayerContext2 = CGLayerGetContext(starLayer);
+    CGContextSetRGBFillColor(myLayerContext2, 1.0, 1.0, 1.0, 1);
+    CGContextAddLines(myLayerContext2, myStarPoints, 10);
+    CGContextFillPath(myLayerContext2);
+    
+    //****** Drawing to the window graphics context *****
+    CGContextSaveGState(context);
+    for (i = 0; i < 7; i ++) {
+        CGContextDrawLayerAtPoint(context, CGPointZero, stripeLayer);
+        CGContextTranslateCTM(context, 0.0, red_stripe_spacing);
+    }
+    CGContextRestoreGState(context);
+    
+    CGContextSetRGBFillColor(context, 0, 0, 0.329, 1.0);
+    CGContextFillRect(context, starField);
+    
+    CGContextSaveGState(context);
+    CGContextTranslateCTM(context, start_x, start_y);
+    for (j = 0; j < num_six_star_rows; j ++) {
+        for (i = 0; i < 6; i ++) {
+            CGContextDrawLayerAtPoint(context, CGPointZero, starLayer);
+            CGContextTranslateCTM(context, h_spacing, 0);
+        }
+        CGContextTranslateCTM(context, (-i*h_spacing), v_spacing);
+    }
+    CGContextRestoreGState(context);
+    
+    CGContextSaveGState(context);
+    CGContextTranslateCTM(context, start_x + h_spacing / 2, start_y + v_spacing / 2);
+    for (j = 0; j < num_five_star_rows; j ++) {
+        for (i = 0; i < 5; i ++) {
+            CGContextDrawLayerAtPoint(context, CGPointZero, starLayer);
+            CGContextTranslateCTM(context, h_spacing, 0);
+        }
+        CGContextTranslateCTM(context, (-i*h_spacing), v_spacing);
+    }
+    CGContextRestoreGState(context);
+    
+    CGLayerRelease(stripeLayer);
+    CGLayerRelease(starLayer);
+}
+
+@end
+
+
 @interface ViewController ()
 
 @end
