@@ -1145,7 +1145,7 @@ void myPaintRadialShading(CGContextRef myContext, CGRect bounds) {
 }
 
 @end
-//*****************************************29*********************************//
+//*****************************************30*********************************//
 @interface MyView30 : UIView
 @end
 @implementation MyView30
@@ -1174,7 +1174,7 @@ CGContextRef MyCreateBitmapContext(int pixelsWide, int pixelsHigh) {
 }
 
 @end
-
+//*****************************************31*********************************//
 #define PSIZE 16 //size of the pattern cell
 @interface MyView31 : UIView
 @end
@@ -1222,6 +1222,7 @@ void MyStencilPatternPainting(CGContextRef myContext, const Rect *windowRect) {
     CGContextFillRect(myContext, CGRectMake(0, 0, PSIZE*20, PSIZE*20));
 }
 @end
+//*****************************************32*********************************//
 
 /**
  * 1.红色条纹和白色条纹的模式。我们可以将这个模式分解为一个单一的红色条纹，因为对于屏幕绘制来说，我们可以假设其背景颜色为白色。我们创建一个红色矩形，然后以变化的偏移量来重复绘制这个矩形，以创建美国国旗上的七条红色条纹。我们将红色矩形绘制到一个层，然后将其绘制到屏幕上七次。
@@ -1314,6 +1315,21 @@ void myDrawFlag (CGContextRef context, CGRect *contextRect) {
     CGLayerRelease(starLayer);
 }
 
+@end
+
+//*****************************************33*********************************//
+@interface MyView33 : UIView
+@end
+@implementation MyView33
+- (void)drawRect:(CGRect)rect {
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    CGContextFillRect(ctx, CGRectMake(100, 100, 100, 100));
+    CGContextFillRect(ctx, CGRectMake(20, 100, 20, 100));
+    CGContextSetFillColorWithColor(ctx, [UIColor blueColor].CGColor);
+    CGAffineTransform transform = CGAffineTransformMake(0.2, 0, 0, 1, 1, 1);
+    CGContextConcatCTM(ctx, transform);
+    CGContextFillRect(ctx, CGRectMake(100, 100, 100, 100));
+}
 @end
 
 
