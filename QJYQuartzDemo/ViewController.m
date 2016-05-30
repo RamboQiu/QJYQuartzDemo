@@ -1262,14 +1262,14 @@ void myDrawFlag (CGContextRef context, CGRect *contextRect) {
     CGPoint point5 = {15, 5}, point6 = {2.5, 11}, point7 = {2.5, 11}, point8 = {16.5, 11};
     CGPoint point9 = {16.5, 11}, point10 = {5, 5};
     const CGPoint myStarPoints[] = {point1, point2, point3, point4, point5, point6, point7, point8, point9, point10};
-    stripeRect = CGRectMake(0, 0, 400, 17); // stripe
-    starField = CGRectMake(0, 102, 160, 119); // star field
-    myBoundingBox = CGRectMake(0, 0, contextRect->size.width, contextRect->size.height);
+    stripeRect = CGRectMake(0, 0, 400, 17); // stripe 条纹
+    starField = CGRectMake(0, 102, 160, 119); // star field 星星
+    myBoundingBox = CGRectMake(0, 0, contextRect->size.width, contextRect->size.height);//创建同传入的参数一样的rect
     //***Creating layers and drawing to them ******
-    stripeLayer = CGLayerCreateWithContext(context, stripeRect.size, NULL);
-    myLayerContext1 = CGLayerGetContext(stripeLayer);
+    stripeLayer = CGLayerCreateWithContext(context, stripeRect.size, NULL);//创建Layer
+    myLayerContext1 = CGLayerGetContext(stripeLayer);//use this layer for the stripe drawing.
     
-    CGContextSetRGBFillColor(myLayerContext1, 1, 0, 0, 1);
+    CGContextSetRGBFillColor(myLayerContext1, 1, 0, 0, 1);//red layer
     CGContextFillRect(myLayerContext1, stripeRect);
     
     starLayer = CGLayerCreateWithContext(context, starField.size, NULL);
@@ -1329,6 +1329,65 @@ void myDrawFlag (CGContextRef context, CGRect *contextRect) {
     CGAffineTransform transform = CGAffineTransformMake(0.2, 0, 0, 1, 1, 1);
     CGContextConcatCTM(ctx, transform);
     CGContextFillRect(ctx, CGRectMake(100, 100, 100, 100));
+}
+@end
+
+//*****************************************34*********************************//
+@interface NEMMutilSelProgressCircleView : UIView
+@property (nonatomic, assign) CGFloat completePersent;
+@property (nonatomic, strong) CAShapeLayer *circleLayer;
+@property (nonatomic, strong) UIBezierPath *circlePath;
+@end
+
+@implementation NEMMutilSelProgressCircleView
+- (instancetype)initWithFrame:(CGRect)frame {
+    if (self = [super initWithFrame:frame]) {
+        _circleLayer = [[CAShapeLayer alloc] init];
+        _circleLayer.frame = self.bounds;
+        [self.layer addSublayer:_circleLayer];
+        _circleLayer.fillColor = nil;
+        _circleLayer.lineCap = kCALineCapRound;
+        _circleLayer.anchorPoint = CGPointMake(0, 0);
+        _circleLayer.lineWidth = 0.5f;
+        _circleLayer.strokeColor = [UIColor blueColor].CGColor;
+    }
+    return self;
+}
+
+- (void)setCompletePersent:(CGFloat)completePersent {
+    if (completePersent == 0) {
+        completePersent = 0.001f;;
+    }
+    if (completePersent == 1) {
+        completePersent = 0.999f;
+    }
+    _circlePath = [UIBezierPath bezierPathWithArcCenter:self.bounds.origin radius:(self.bounds.size.width / 2) startAngle:(completePersent - 1) * M_PI endAngle:(1 - completePersent) * M_PI clockwise:NO];
+    _circleLayer.path = _circlePath.CGPath;
+}
+@end
+
+@interface MyView34 : UIView
+
+@property (nonatomic, strong) NEMMutilSelProgressCircleView *circleCoverView;
+@end
+
+@implementation MyView34
+- (instancetype)init {
+    if (self = [super init]) {
+        UISlider *slider = [[UISlider alloc] initWithFrame:CGRectMake(20, 300, 100, 30)];
+        slider.maximumValue = 1;
+        slider.minimumValue = 0;
+        [self addSubview:slider];
+        [slider addTarget:self action:@selector(valueChanged:) forControlEvents:UIControlEventValueChanged];
+        
+        _circleCoverView = [[NEMMutilSelProgressCircleView alloc] initWithFrame:CGRectMake(50, 50, 30, 30)];
+        [self addSubview:_circleCoverView];
+    }
+    return self;
+}
+
+- (void)valueChanged:(UISlider *)sender {
+    [_circleCoverView setCompletePersent:sender.value];
 }
 @end
 

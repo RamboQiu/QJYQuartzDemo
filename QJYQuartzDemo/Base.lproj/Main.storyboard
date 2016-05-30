@@ -860,14 +860,14 @@
                                             <segue destination="scK-BR-uZL" kind="show" identifier="33" id="IhF-eQ-y0o"/>
                                         </connections>
                                     </tableViewCell>
-                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="gZm-za-Aji">
+                                    <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="gZm-za-Aji" userLabel="34">
                                         <rect key="frame" x="0.0" y="2004" width="600" height="44"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="gZm-za-Aji" id="Lx8-Do-E9S">
                                             <rect key="frame" x="0.0" y="0.0" width="600" height="43"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
-                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Label" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oAX-Vf-MuS">
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="34.CAShapeLayer绘制路径" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="oAX-Vf-MuS">
                                                     <rect key="frame" x="0.0" y="0.0" width="600" height="43"/>
                                                     <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                     <color key="textColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
@@ -881,6 +881,9 @@
                                                 <constraint firstItem="oAX-Vf-MuS" firstAttribute="top" secondItem="Lx8-Do-E9S" secondAttribute="top" id="Og9-kT-Ea1"/>
                                             </constraints>
                                         </tableViewCellContentView>
+                                        <connections>
+                                            <segue destination="scK-BR-uZL" kind="show" identifier="34" id="UYv-2A-Tne"/>
+                                        </connections>
                                     </tableViewCell>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" id="ycv-hG-hCI">
                                         <rect key="frame" x="0.0" y="2048" width="600" height="44"/>
@@ -1532,6 +1535,6 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="IhF-eQ-y0o"/>
+        <segue reference="UYv-2A-Tne"/>
     </inferredMetricsTieBreakers>
 </document>
