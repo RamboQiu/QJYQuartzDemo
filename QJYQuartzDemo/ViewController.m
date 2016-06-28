@@ -100,6 +100,9 @@
 
 #import "ViewController.h"
 //**********************************1*****************************************//
+/**
+ * 1.在UIView的子类方法drawRect：中绘制一个蓝色圆，使用UIKit在Cocoa为我们提供的当前上下文中完成绘图任务。
+**/
 @interface MyView1 : UIView
 
 @end
@@ -115,6 +118,9 @@
 
 @end
 //***********************************2****************************************//
+/**
+ * 2.使用Core Graphics实现绘制蓝色圆
+ **/
 
 @interface MyView2 : UIView
 
@@ -132,6 +138,15 @@
 
 @end
 //************************************3***************************************//
+/**
+ * 第三种绘图形式：我将在UIView子类的drawLayer:inContext：方法中实现绘图任务。
+ * drawLayer:inContext：方法是一个绘制图层内容的代理方法。为了能够调用
+ * drawLayer:inContext：方法，我们需要设定图层的代理对象。但要注意，不应该将UIView对象设置
+ * 为显示层的委托对象，这是因为UIView对象已经是隐式层的代理对象，再将它设置为另一个层的委托对象
+ * 就会出问题。轻量级的做法是：编写负责绘图形的代理类。在MyView.h文件中声明如下代码：
+ * 不能再将某个UIView设置为CALayer的delegate，因为UIView对象已经是它内部根层的delegate，
+ * 再次设置为其他层的delegate就会出问题。
+ **/
 @interface MyView3LayerDelegate : NSObject
 
 @end
@@ -156,15 +171,6 @@
 @end
 
 @implementation MyView3
-/**
- * 第三种绘图形式：我将在UIView子类的drawLayer:inContext：方法中实现绘图任务。
- * drawLayer:inContext：方法是一个绘制图层内容的代理方法。为了能够调用
- * drawLayer:inContext：方法，我们需要设定图层的代理对象。但要注意，不应该将UIView对象设置
- * 为显示层的委托对象，这是因为UIView对象已经是隐式层的代理对象，再将它设置为另一个层的委托对象
- * 就会出问题。轻量级的做法是：编写负责绘图形的代理类。在MyView.h文件中声明如下代码：
- * 不能再将某个UIView设置为CALayer的delegate，因为UIView对象已经是它内部根层的delegate，
- * 再次设置为其他层的delegate就会出问题。
-**/
 - (instancetype)init {
     if (self = [super init]) {
         CALayer *myLayer = [CALayer layer];
@@ -182,6 +188,9 @@
 
 @end
 //*****************************************4**********************************//
+/**
+ * 4.使用Core Graphics在drawLayer:inContext：方法中实现view3
+ **/
 @interface MyView4LayerDelegate : NSObject
 
 @end
@@ -203,7 +212,6 @@
 @end
 
 @implementation MyView4
-///使用Core Graphics在drawLayer:inContext：方法中实现view3
 - (instancetype)init {
     if (self = [super init]) {
         CALayer *myLayer = [CALayer layer];
@@ -218,6 +226,9 @@
 }
 @end
 //*****************************************5**********************************//
+/**
+ * 5.UIGraphicsBeginImageContextWithOptions  UIKit 实现
+ **/
 @interface MyView5 : UIView
 @end
 
@@ -240,6 +251,9 @@
 }
 @end
 //*****************************************6**********************************//
+/**
+ * 6.UIGraphicsBeginImageContextWithOptions  Core Graphics 实现
+ **/
 @interface MyView6 : UIView
 @end
 
@@ -263,6 +277,9 @@
 }
 @end
 //*****************************************7**********************************//
+/**
+ * 7.复制image到右边
+ **/
 @interface MyView7 : UIView
 @end
 
@@ -285,6 +302,9 @@
 }
 @end
 //*****************************************8**********************************//
+/**
+ * 8.复制image放大
+ **/
 @interface MyView8 : UIView
 @end
 
@@ -308,6 +328,9 @@
 }
 @end
 //*****************************************9**********************************//
+/**
+ * 9.裁剪image
+ **/
 @interface MyView9 : UIView
 @end
 
@@ -329,6 +352,9 @@
 }
 @end
 //*****************************************10*********************************//
+/**
+ * 10.将图片拆分成两半，并分别绘制在上下文的左右两边
+ **/
 @interface MyView10 : UIView
 @end
 
@@ -396,6 +422,9 @@ CGImageRef flip(CGImageRef im) {
 
 @end
 //*****************************************11**********************************//
+/**
+ * 11.首先创建一个径向渐变的滤镜，该滤镜是从白到黑的渐变方式，白色区域的半径默认是100。接着将其与一张使用CIDarkenBlendMode滤镜的图片合成。CIDarkenBlendMode的作用是背景图片样本将被源图片的黑色部分替换掉。
+ **/
 @interface MyView11 : UIView
 @end
 
@@ -422,6 +451,9 @@ CGImageRef flip(CGImageRef im) {
 }
 @end
 //*****************************************12*********************************//
+/**
+ * 12.CGContextClearRect函数的应用
+ **/
 @interface MyView12 : UIView
 @end
 @implementation MyView12
@@ -453,6 +485,9 @@ CGImageRef flip(CGImageRef im) {
 }
 @end
 //*****************************************13*********************************//
+/**
+ * 13.CG绘制向上的箭头
+ **/
 @interface MyView13 : UIView
 @end
 @implementation MyView13
@@ -479,6 +514,9 @@ CGImageRef flip(CGImageRef im) {
 }
 @end
 //*****************************************14*********************************//
+/**
+ * 14.UIKit绘制向上的箭头
+ **/
 @interface MyView14 : UIView
 @end
 @implementation MyView14
@@ -502,6 +540,9 @@ CGImageRef flip(CGImageRef im) {
 }
 @end
 //*****************************************15*********************************//
+/**
+ * 15.UIBezierPath绘制带有圆角的矩形
+ **/
 @interface MyView15 : UIView
 @end
 @implementation MyView15
@@ -515,6 +556,9 @@ CGImageRef flip(CGImageRef im) {
 }
 @end
 //*****************************************16*********************************//
+/**
+ * 16.使用裁剪的形式画出箭头
+ **/
 @interface MyView16 : UIView
 @end
 @implementation MyView16
@@ -543,6 +587,9 @@ CGImageRef flip(CGImageRef im) {
 }
 @end
 //*****************************************17*********************************//
+/**
+ * 17.16中的箭杆使用渐变颜色
+ **/
 @interface MyView17 : UIView
 @end
 @implementation MyView17
@@ -621,6 +668,9 @@ void drawStripes(void *info, CGContextRef con) {
 
 @end
 //*****************************************18*********************************//
+/**
+ * 18.图形上下文变换,使用CTM旋转变换17
+ **/
 @interface MyView18 : UIView
 @end
 @implementation MyView18
@@ -681,6 +731,9 @@ void drawStripes(void *info, CGContextRef con) {
 }
 @end
 //*****************************************19*********************************//
+/**
+ * 19.阴影,使18有阴影效果
+ **/
 @interface MyView19 : UIView
 @end
 @implementation MyView19
@@ -757,6 +810,9 @@ void drawStripes(void *info, CGContextRef con) {
 }
 @end
 //*****************************************20*********************************//
+/**
+ * 20.CGContextSetLine
+ **/
 @interface MyView20 : UIView
 @end
 @implementation MyView20
@@ -792,6 +848,9 @@ void drawStripes(void *info, CGContextRef con) {
 }
 @end
 //*****************************************21*********************************//
+/**
+ * 21.addArcToPoint
+ **/
 @interface MyView21 : UIView
 @end
 @implementation MyView21
@@ -808,6 +867,9 @@ void drawStripes(void *info, CGContextRef con) {
 }
 @end
 //*****************************************22*********************************//
+/**
+ * 22.AddCurve
+ **/
 @interface MyView22 : UIView
 @end
 @implementation MyView22
@@ -820,6 +882,9 @@ void drawStripes(void *info, CGContextRef con) {
 }
 @end
 //*****************************************23*********************************//
+/**
+ * 23.addPath
+ **/
 @interface MyView23 : UIView
 @end
 @implementation MyView23
@@ -907,6 +972,9 @@ void drawStripes(void *info, CGContextRef con) {
 }
 @end
 //*****************************************24*********************************//
+/**
+ * 24.CGContextClip
+ **/
 @interface MyView24 : UIView
 @end
 @implementation MyView24
@@ -928,6 +996,9 @@ void drawStripes(void *info, CGContextRef con) {
 }
 @end
 //*****************************************25*********************************//
+/**
+ * 25.CGContextEOFillPath.奇偶规则，假如一个点被跨过，那么+1，最后是奇数，那么要被填充，偶数则不填充，和方向没有关系。
+ **/
 @interface MyView25 : UIView
 @end
 @implementation MyView25
@@ -954,6 +1025,9 @@ void drawStripes(void *info, CGContextRef con) {
 
 @end
 //*****************************************26*********************************//
+/**
+ * 26.CGContextClipToMask
+ **/
 @interface MyView26 : UIView
 @end
 @implementation MyView26
@@ -980,6 +1054,9 @@ void drawStripes(void *info, CGContextRef con) {
 
 @end
 //*****************************************27*********************************//
+/**
+ * 27.CGContextBeginTransparencyLayer
+ **/
 @interface MyView27 : UIView
 
 @end
@@ -1010,6 +1087,9 @@ void drawStripes(void *info, CGContextRef con) {
 }
 @end
 //*****************************************28*********************************//
+/**
+ * 28.CGContextDrawTiledImage
+ **/
 @interface MyView28 : UIView
 
 @end
@@ -1025,6 +1105,9 @@ void drawStripes(void *info, CGContextRef con) {
 }
 @end
 //*****************************************29*********************************//
+/**
+ * 29.渐变CGContextDrawShading
+ **/
 @interface MyView29 : UIView
 @end
 @implementation MyView29
@@ -1146,6 +1229,9 @@ void myPaintRadialShading(CGContextRef myContext, CGRect bounds) {
 
 @end
 //*****************************************30*********************************//
+/**
+ * 30.bitmap
+ **/
 @interface MyView30 : UIView
 @end
 @implementation MyView30
@@ -1175,6 +1261,9 @@ CGContextRef MyCreateBitmapContext(int pixelsWide, int pixelsHigh) {
 
 @end
 //*****************************************31*********************************//
+/**
+ * 31.模式pattern
+ **/
 #define PSIZE 16 //size of the pattern cell
 @interface MyView31 : UIView
 @end
@@ -1223,6 +1312,9 @@ void MyStencilPatternPainting(CGContextRef myContext, const Rect *windowRect) {
 }
 @end
 //*****************************************32*********************************//
+/**
+ * 32.层绘制
+ **/
 
 /**
  * 1.红色条纹和白色条纹的模式。我们可以将这个模式分解为一个单一的红色条纹，因为对于屏幕绘制来说，我们可以假设其背景颜色为白色。我们创建一个红色矩形，然后以变化的偏移量来重复绘制这个矩形，以创建美国国旗上的七条红色条纹。我们将红色矩形绘制到一个层，然后将其绘制到屏幕上七次。
@@ -1318,6 +1410,9 @@ void myDrawFlag (CGContextRef context, CGRect *contextRect) {
 @end
 
 //*****************************************33*********************************//
+/**
+ * 33.CGAffineTransformMake
+ **/
 @interface MyView33 : UIView
 @end
 @implementation MyView33
@@ -1333,6 +1428,9 @@ void myDrawFlag (CGContextRef context, CGRect *contextRect) {
 @end
 
 //*****************************************34*********************************//
+/**
+ * 34.CAShapeLayer绘制路径
+ **/
 @interface NEMMutilSelProgressCircleView : UIView
 @property (nonatomic, assign) CGFloat completePersent;
 @property (nonatomic, strong) CAShapeLayer *circleLayer;
